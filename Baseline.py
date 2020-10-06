@@ -38,7 +38,9 @@ DataFrame_filtrado = DataFrame_filtrado_CMPX2.copy()
 """---"""
 
 import pandas as pd
-Performance = {'Estructura':['XGBRegressor' , 'NN_A' , 'NN_CASCADA']}
+Performance = {'Estructura':['XGBRegressor' , 'Random_Forest' 
+              , 'CatBoost' , 'LGMRegressor', 'NN' , 'NN_ENSAMBLE']}
+
 list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
                    'MEZCLA_U','MEZCLA_T1','HILATURA_U','HILATURA_T1',
                    'ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
@@ -53,6 +55,11 @@ list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
                    'LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
                    'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5',
                    'LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
+                   'COLORANTE_BLANCO_T','COLORANTE_BLANCO_U',
+                   'COLORANTE_CRUDO_T','COLORANTE_CRUDO_U',
+                   'COLORANTE_OTROS_T','COLORANTE_OTROS_U',
+                   'COLORANTE_REACTIVO_T','COLORANTE_REACTIVO_U',
+                   'COLORANTE_TINA_T','COLORANTE_TINA_U',
                    'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U',
                    'FACT_COB_TOTAL_REAL', 'TUPIDEZ',
                    'Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom','E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom',
@@ -67,8 +74,7 @@ list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
                    'var_E%_075','var_Ne_075','var_TPI_075','var_cN/tex_075',
                    '%falla_E_025','%falla_R_025','CV% E_025','CV% Ne_025','CV% TPI_025','CV%R_025','CVm%_025','E%_025','FT_025','H_025','I_025','NEPS(+140%)_025',
                    'NEPS(+200%)_025','Ne_025','PD(-40%)_025','PD(-50%)_025','PG(+35%)_025','PG(+50%)_025','Sh_025','TPI_025','cN/tex_025',
-                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' 
-                  ]
+                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' ]
 
 list_targets = ['CMPX DE PARO POR URDIMBRE']
 
@@ -236,19 +242,399 @@ X_total.columns = lista_nombres
 X_total
 
 #Predecimos
-predictions_to_NN=my_model.predict(X_total)
-len(predictions_to_NN)
-Tabla_Explicativa = pd.Series(predictions_to_NN)
+predictions_to_NN_1=my_model.predict(X_total)
+len(predictions_to_NN_1)
+Tabla_Explicativa = pd.Series(predictions_to_NN_1)
 
 """####Permutation test"""
 
-import eli5
+#import eli5
 
-permutador = eli5.sklearn.PermutationImportance(my_model).fit(OH_X_test[list(OH_X_test.columns)], y_test)
-eli5.explain_weights(permutador, feature_names=list(OH_X_test.columns))
+#permutador = eli5.sklearn.PermutationImportance(my_model).fit(OH_X_test[list(OH_X_test.columns)], y_test)
+#eli5.explain_weights(permutador, feature_names=list(OH_X_test.columns))
 
 #DF para explicar los datos
-D_F_Permutation = eli5.explain_weights_df(permutador,top = 20 , feature_names=list(OH_X_test.columns))
+#D_F_Permutation = eli5.explain_weights_df(permutador,top = 20 , feature_names=list(OH_X_test.columns))
+
+"""
+
+#Buscamos Nuevos modelos
+
+##Random forest
+"""
+list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
+                   'MEZCLA_U','MEZCLA_T1','HILATURA_U','HILATURA_T1',
+                   'ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
+                   'DIENTES/CM_PEINE','HILOS/DIENTE_FONDO','HILOS/DIENTE_ORILLO','ANCHO_PEINE','ANCHO_CRUDO',
+                   '%E_URDIMBRE','CUADROS_FONDO',
+                   'PORC_HILOS_FONDO',
+                   'TOTAL_HILOS/ANCHO_CRUDO','PASADAS/CM_T1','PORC_PASADAS/CM_T1' ,'RATIO_CONS1_CONS2',
+                   'GR/MTL_U','GR/MTL_T1','TOTAL_PASADAS',
+                   'PORC_GR/MTL_U','PORC_GR/MTL_T1','TOTAL_GR/MTL','FACTOR_NORMA', 'MAQUINA_PINZAS',
+                   'NUM_COLORES_U',
+                   'NUM_COLORES_T','AGUA    ',
+                   'LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
+                   'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5',
+                   'LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
+                   'COLORANTE_BLANCO_T','COLORANTE_BLANCO_U',
+                   'COLORANTE_CRUDO_T','COLORANTE_CRUDO_U',
+                   'COLORANTE_OTROS_T','COLORANTE_OTROS_U',
+                   'COLORANTE_REACTIVO_T','COLORANTE_REACTIVO_U',
+                   'COLORANTE_TINA_T','COLORANTE_TINA_U',
+                   'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U',
+                   'FACT_COB_TOTAL_REAL', 'TUPIDEZ',
+                   'Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom','E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom',
+                   'PD(-50%)_prom','PG(+35%)_prom','PG(+50%)_prom','NEPS(+140%)_prom','NEPS(+200%)_prom','H_prom','Sh_prom',
+                   'var_Ne_prom','var_cN/tex_prom','var_TPI_prom','var_E%_prom',
+                   '%falla_E_prom','Ne_std','CV% Ne_std','cN/tex_std','TPI_std','FT_std','CV% TPI_std','E%_std','CV% E_std','CV%R_std','CVm%_std','I_std','PD(-40%)_std',
+                   'PD(-50%)_std','PG(+35%)_std','PG(+50%)_std','NEPS(+140%)_std','NEPS(+200%)_std','H_std','Sh_std',
+                   'var_Ne_std','var_cN/tex_std','var_TPI_std','var_E%_std',
+                   '%falla_E_std','%falla_E_075','%falla_R_075','CV% E_075','CV% Ne_075','CV% TPI_075',
+                   'CV%R_075','CVm%_075','E%_075','FT_075','H_075','I_075','NEPS(+140%)_075','NEPS(+200%)_075','Ne_075','PD(-40%)_075','PD(-50%)_075','PG(+35%)_075',
+                   'PG(+50%)_075','Sh_075','TPI_075','cN/tex_075',
+                   'var_E%_075','var_Ne_075','var_TPI_075','var_cN/tex_075',
+                   '%falla_E_025','%falla_R_025','CV% E_025','CV% Ne_025','CV% TPI_025','CV%R_025','CVm%_025','E%_025','FT_025','H_025','I_025','NEPS(+140%)_025',
+                   'NEPS(+200%)_025','Ne_025','PD(-40%)_025','PD(-50%)_025','PG(+35%)_025','PG(+50%)_025','Sh_025','TPI_025','cN/tex_025',
+                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' ]
+
+list_targets = ['CMPX DE PARO POR URDIMBRE']
+
+predictores_numericos = [i for i in list_predictors if  'float' in str(DataFrame_filtrado[i].dtype) or 'int' in str(DataFrame_filtrado[i].dtype)]
+predictores_categoricos = [i for i in list_predictors if i not in predictores_numericos]
+
+#quitar variables correlacionadas
+df=DataFrame_filtrado.copy()
+# Create correlation matrix
+corr_matrix = df[predictores_categoricos+predictores_numericos].corr().abs()
+
+# Select upper triangle of correlation matrix
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
+
+# Find index of feature columns with correlation greater than 0.95
+to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
+for i in to_drop:
+  if i in predictores_numericos:
+    predictores_numericos.remove(i)
+  elif i in predictores_categoricos:
+    predictores_categoricos.remove(i)
+# df.drop(df[to_drop], axis=1,inplace=True)
+
+from sklearn.model_selection import train_test_split
+X=df[list_predictors]
+y=df[list_targets[0]]
+X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
+
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+
+# Aplicamos hot enconder en los datos categoricos
+OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(X_train[predictores_categoricos].astype(str)))
+OH_cols_test = pd.DataFrame(OH_encoder.transform(X_test[predictores_categoricos].astype(str)))
+
+# One-hot encoding elimina los indices asi que los volvemos a poner
+OH_cols_train.index = X_train.index
+OH_cols_test.index = X_test.index
+
+# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
+num_X_train = X_train[predictores_numericos]
+num_X_test = X_test[predictores_numericos]
+
+# Add one-hot encoded columns to numerical features
+OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
+OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
+
+#Renombramos a las columnas
+lista_nombres_numericos = num_X_train[predictores_numericos].columns 
+lista_nombres_categoricos = OH_encoder.get_feature_names(predictores_categoricos)
+lista_nombres = list(lista_nombres_numericos) + list(lista_nombres_categoricos)
+OH_X_train.columns = lista_nombres
+OH_X_test.columns = lista_nombres
+
+# Importamos el random forest
+from sklearn.ensemble import RandomForestRegressor
+
+rf = RandomForestRegressor(n_estimators = 500 , criterion = 'mse', random_state = 42)# Entrenamos el modelo con 1000 arboles
+
+rf.fit(OH_X_train, y_train)
+
+# Predecimos
+predictions_to_NN_2=rf.predict(X_total)
+
+predictions = rf.predict(OH_X_test)
+
+errors_rf = abs(predictions - y_test)
+
+mape_rf = mean_absolute_percentage_error(y_test, predictions)
+
+Resultado_rf=r2_score(y_test,rf.predict(OH_X_test))
+print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado_rf*100))
+
+Performance['MAE'].append(str(round(np.mean(errors_rf))))
+Performance['MAPE'].append(str((mape_rf))[0:5])
+Performance['R2'].append(str((Resultado_rf*100))[0:5])
+
+test_resultados = rf.predict(OH_X_test).flatten()
+plt.figure(figsize= (20,20))
+fig, ax = plt.subplots()
+ax.scatter(y_test, test_resultados)
+plt.style.use('seaborn')
+ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
+ax.set_xlabel('Real')
+ax.set_ylabel('Predictor')
+plt.show()
+
+#Se genera un histograma con los errores de las predicciones
+Error_histograma = y_test - test_resultados 
+plt.figure(figsize = (15 , 5))
+sns.distplot(Error_histograma , kde= False)
+
+"""##CatBoostRegressor
+
+Para evitar el aumento sustancial de columnas por el uso de one hot encoder en las varibales categoricas se usaran 2 diferentes modelos que no requieren este tratamiento
+"""
+
+# Revisamos la version
+import catboost
+from sklearn.model_selection import GridSearchCV
+print(catboost.__version__)
+
+
+predictores_numericos = [i for i in list_predictors if  'float' in str(DataFrame_filtrado[i].dtype) or 'int' in str(DataFrame_filtrado[i].dtype)]
+predictores_categoricos = [i for i in list_predictors if i not in predictores_numericos]
+
+#quitar variables correlacionadas
+df=DataFrame_filtrado.copy()
+# Create correlation matrix
+corr_matrix = df[predictores_categoricos+predictores_numericos].corr().abs()
+
+# Select upper triangle of correlation matrix
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
+
+# Find index of feature columns with correlation greater than 0.95
+to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
+for i in to_drop:
+  if i in predictores_numericos:
+    predictores_numericos.remove(i)
+  elif i in predictores_categoricos:
+    predictores_categoricos.remove(i)
+# df.drop(df[to_drop], axis=1,inplace=True)
+
+len(predictores_numericos + predictores_categoricos)
+
+print(predictores_categoricos)
+
+"""Separamos las variables para entrenamiento y validacion"""
+
+from sklearn.model_selection import train_test_split
+X=df[list_predictors]
+y=df[list_targets[0]]
+X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
+
+"""Tratamiento de variables"""
+
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+
+# Aplicamos hot enconder en los datos categoricos
+
+OH_cols_train = pd.DataFrame(X_train[predictores_categoricos].astype(str))
+OH_cols_test = pd.DataFrame(X_test[predictores_categoricos].astype(str))
+
+# One-hot encoding elimina los indices asi que los volvemos a poner
+OH_cols_train.index = X_train.index
+OH_cols_test.index = X_test.index
+
+# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
+num_X_train = X_train[predictores_numericos]
+num_X_test = X_test[predictores_numericos]
+
+# Add one-hot encoded columns to numerical features
+OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
+OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
+
+
+parameters = {'depth'         : [6,8,10],
+              'learning_rate' : [0.01, 0.05, 0.1],
+              'l2_leaf_reg': [1,4,9],
+              'iterations'    : [30, 50, 100]
+              }
+
+#Creamos el modelo
+#model_CBR = catboost.CatBoostRegressor(cat_features= OH_X_train[predictores_categoricos] ,eval_metric= 'MAPE')
+#Busqueda en grilla
+#grid = GridSearchCV(estimator=model_CBR, param_grid = parameters, cv = 2, verbose= 1)
+#grid.fit(OH_X_train, y_train)
+#Mostrar los resultados
+#print(" Results from Grid Search " )
+#print("\n The best estimator across ALL searched params:\n", grid.best_estimator_)
+#print("\n The best score across ALL searched params:\n", grid.best_score_)
+#print("\n The best parameters across ALL searched params:\n", grid.best_params_)
+
+"""The best parameters across ALL searched params:
+ {'depth': 10, 'iterations': 100, 'l2_leaf_reg': 1, 'learning_rate': 0.05}
+"""
+
+CBR = catboost.CatBoostRegressor(cat_features= OH_X_train[predictores_categoricos] ,
+                                 learning_rate= 0.05 , depth= 10 , iterations= 100 ,eval_metric= 'MAPE' 
+                                 ,l2_leaf_reg = 1)
+
+CBR.fit(OH_X_train, y_train)
+
+###
+#Columnas para la red neuronal
+###
+X_cols = pd.DataFrame(X[predictores_categoricos].astype(str))
+X_cols.index = X.index
+num_X = X[predictores_numericos]
+X_temp = pd.concat([num_X, X_cols], axis=1)
+
+predictions_to_NN_3=CBR.predict(X_temp)
+#
+
+predictions = CBR.predict(OH_X_test)
+errors = abs(predictions - y_test)
+Resultado=r2_score(y_test,CBR.predict(OH_X_test))
+
+print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado*100))
+
+print("El MAPE de esta solucion fue de: {:6.2f} %".format(mean_absolute_percentage_error(y_test,predictions)))
+
+test_resultados = CBR.predict(OH_X_test).flatten()
+fig, ax = plt.subplots()
+ax.scatter(y_test, test_resultados)
+plt.style.use('seaborn')
+ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
+ax.set_xlabel('Real')
+ax.set_ylabel('Predictor')
+plt.figure(figsize= (20,20))
+plt.show()
+
+#Se genera un histograma con los errores de las predicciones
+Error_histograma = y_test - test_resultados 
+plt.figure(figsize = (15 , 5))
+sns.distplot(Error_histograma , kde= False)
+plt.xlabel('Error CMPX_U')
+
+Performance['MAE'].append(str(round(np.mean(errors))))
+Performance['MAPE'].append(str((mean_absolute_percentage_error(y_test,predictions)))[0:5])
+Performance['R2'].append(str((Resultado*100))[0:5])
+
+"""##LGBMRegressor"""
+
+# check lightgbm version
+import lightgbm
+print(lightgbm.__version__)
+
+P_total= predictores_numericos + predictores_categoricos
+
+"""Separamos las variables para entrenamiento y validacion"""
+
+from sklearn.model_selection import train_test_split
+X=df[list_predictors]
+y=df[list_targets[0]]
+X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
+
+"""Tratamiento de variables"""
+
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+
+# Aplicamos hot enconder en los datos categoricos
+
+OH_cols_train = pd.DataFrame(X_train[predictores_categoricos].astype(str))
+OH_cols_test = pd.DataFrame(X_test[predictores_categoricos].astype(str))
+
+# One-hot encoding elimina los indices asi que los volvemos a poner
+OH_cols_train.index = X_train.index
+OH_cols_test.index = X_test.index
+
+# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
+num_X_train = X_train[predictores_numericos]
+num_X_test = X_test[predictores_numericos]
+
+# Add one-hot encoded columns to numerical features
+OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
+OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
+
+params = {
+    'num_leaves': [7, 14, 21, 28],
+    'learning_rate': [0.1, 0.03, 0.003],
+    'max_depth': [-1, 3, 5],
+    'n_estimators': [50, 100, 200],
+    'colsample_bytree': [0.7, 0.8],
+    'reg_alpha': [1.1, 1.2, 1.3],
+    'reg_lambda': [1.1, 1.2, 1.3],
+    'min_split_gain': [0.3, 0.4],
+    'subsample': [0.7, 0.8, 0.9],
+    'subsample_freq': [20]
+}
+
+#Creamos el modelo
+#model_LGB = lightgbm.LGBMRegressor(eval_metric= 'MAPE'  )
+#Busqueda en grilla
+#grid = GridSearchCV(estimator=model_LGB, param_grid = params, cv = 2, verbose= 1 , n_jobs= -1)
+#grid.fit(num_X_train, y_train)
+#Mostrar los resultados
+#print(" Results from Grid Search " )
+#print("\n The best estimator across ALL searched params:\n", grid.best_estimator_)
+#print("\n The best score across ALL searched params:\n", grid.best_score_)
+#print("\n The best parameters across ALL searched params:\n", grid.best_params_)
+
+"""The best parameters across ALL searched params:
+ {'colsample_bytree': 0.7, 'learning_rate': 0.03, 'max_depth': -1, 'min_split_gain': 0.3, 'n_estimators': 200, 'num_leaves': 21, 'reg_alpha': 1.3, 'reg_lambda': 1.1, 'subsample': 0.9, 'subsample_freq': 20}
+"""
+
+LGB = lightgbm.LGBMRegressor(colsample_bytree= 0.7 , num_leaves= 21 , reg_alpha= 1.3 , n_estimators=200 
+                             ,learning_rate = 0.03 , max_depth = -1 ,min_split_gain =0.3 ,reg_lambda = 1.1
+                              ,subsample = 0.9, subsample_freq = 20 )
+
+for feature in predictores_categoricos:
+    OH_X_train[feature] = pd.Series(OH_X_train[feature], dtype="category")
+    OH_X_test[feature] = pd.Series(OH_X_train[feature], dtype="category")
+
+LGB.fit(OH_X_train, y_train  )
+
+predictions = LGB.predict(OH_X_test)
+errors = abs(predictions - y_test)
+Resultado=r2_score(y_test,LGB.predict(OH_X_test))
+
+#
+#Columnas para la red neuronal
+#
+X_temp = X.copy()
+for feature in predictores_categoricos:
+    X_temp[feature] = pd.Series(X_temp[feature], dtype="category")
+    X_temp[feature] = pd.Series(X_temp[feature], dtype="category")
+
+predictions_to_NN_4=LGB.predict(X_temp[predictores_categoricos + predictores_numericos])
+#
+
+print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado*100))
+
+print("El MAPE de esta solucion fue de: {:6.2f} %".format(mean_absolute_percentage_error(y_test,predictions)))
+
+test_resultados = LGB.predict(OH_X_test).flatten()
+
+fig, ax = plt.subplots()
+ax.scatter(y_test, test_resultados)
+plt.style.use('seaborn')
+ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
+ax.set_xlabel('Real')
+ax.set_ylabel('Predictor')
+plt.figure(figsize= (20,20))
+plt.show()
+
+#Se genera un histograma con los errores de las predicciones
+Error_histograma = y_test - test_resultados 
+plt.figure(figsize = (15 , 5))
+sns.distplot(Error_histograma , kde= False)
+plt.xlabel('Error CMPX_U')
+
+Performance['MAE'].append(str(round(np.mean(errors))))
+Performance['MAPE'].append(str((mean_absolute_percentage_error(y_test,predictions)))[0:5])
+Performance['R2'].append(str((Resultado*100))[0:5])
+
 
 """## Redes neuronales."""
 
@@ -407,17 +793,77 @@ Performance['MAE'].append(str(historial.loc[ historial.shape[0] -1 ,'MAE' ])[0:5
 Performance['MAPE'].append(str((NN_A_MAPE))[0:5])
 Performance['R2'].append(str((Resultado*100))[0:5])
 
+
+
 """## Redes neuronales con prediccion ensamblada
 
 *Se le agregan las predicciones del XGBRegressor Y se entrenan a las NN*
 """
+list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
+                   'MEZCLA_U','MEZCLA_T1','HILATURA_U','HILATURA_T1',
+                   'ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
+                   'DIENTES/CM_PEINE','HILOS/DIENTE_FONDO','HILOS/DIENTE_ORILLO','ANCHO_PEINE','ANCHO_CRUDO',
+                   '%E_URDIMBRE','CUADROS_FONDO',
+                   'PORC_HILOS_FONDO',
+                   'TOTAL_HILOS/ANCHO_CRUDO','PASADAS/CM_T1','PORC_PASADAS/CM_T1' ,'RATIO_CONS1_CONS2',
+                   'GR/MTL_U','GR/MTL_T1','TOTAL_PASADAS',
+                   'PORC_GR/MTL_U','PORC_GR/MTL_T1','TOTAL_GR/MTL','FACTOR_NORMA', 'MAQUINA_PINZAS',
+                   'NUM_COLORES_U',
+                   'NUM_COLORES_T','AGUA    ',
+                   'LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
+                   'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5',
+                   'LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
+                   'COLORANTE_BLANCO_T','COLORANTE_BLANCO_U',
+                   'COLORANTE_CRUDO_T','COLORANTE_CRUDO_U',
+                   'COLORANTE_OTROS_T','COLORANTE_OTROS_U',
+                   'COLORANTE_REACTIVO_T','COLORANTE_REACTIVO_U',
+                   'COLORANTE_TINA_T','COLORANTE_TINA_U',
+                   'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U',
+                   'FACT_COB_TOTAL_REAL', 'TUPIDEZ',
+                   'Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom','E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom',
+                   'PD(-50%)_prom','PG(+35%)_prom','PG(+50%)_prom','NEPS(+140%)_prom','NEPS(+200%)_prom','H_prom','Sh_prom',
+                   'var_Ne_prom','var_cN/tex_prom','var_TPI_prom','var_E%_prom',
+                   '%falla_E_prom','Ne_std','CV% Ne_std','cN/tex_std','TPI_std','FT_std','CV% TPI_std','E%_std','CV% E_std','CV%R_std','CVm%_std','I_std','PD(-40%)_std',
+                   'PD(-50%)_std','PG(+35%)_std','PG(+50%)_std','NEPS(+140%)_std','NEPS(+200%)_std','H_std','Sh_std',
+                   'var_Ne_std','var_cN/tex_std','var_TPI_std','var_E%_std',
+                   '%falla_E_std','%falla_E_075','%falla_R_075','CV% E_075','CV% Ne_075','CV% TPI_075',
+                   'CV%R_075','CVm%_075','E%_075','FT_075','H_075','I_075','NEPS(+140%)_075','NEPS(+200%)_075','Ne_075','PD(-40%)_075','PD(-50%)_075','PG(+35%)_075',
+                   'PG(+50%)_075','Sh_075','TPI_075','cN/tex_075',
+                   'var_E%_075','var_Ne_075','var_TPI_075','var_cN/tex_075',
+                   '%falla_E_025','%falla_R_025','CV% E_025','CV% Ne_025','CV% TPI_025','CV%R_025','CVm%_025','E%_025','FT_025','H_025','I_025','NEPS(+140%)_025',
+                   'NEPS(+200%)_025','Ne_025','PD(-40%)_025','PD(-50%)_025','PG(+35%)_025','PG(+50%)_025','Sh_025','TPI_025','cN/tex_025',
+                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' ]
 
-DataFrame_filtrado["predictions_RF"] =  predictions_to_NN
+list_targets = ['CMPX DE PARO POR URDIMBRE']
 
-DataFrame_filtrado
+predictores_numericos = [i for i in list_predictors if  'float' in str(DataFrame_filtrado[i].dtype) or 'int' in str(DataFrame_filtrado[i].dtype)]
+predictores_categoricos = [i for i in list_predictors if i not in predictores_numericos]
+
+#quitar variables correlacionadas
+df=DataFrame_filtrado.copy()
+# Create correlation matrix
+corr_matrix = df[predictores_categoricos+predictores_numericos].corr().abs()
+
+# Select upper triangle of correlation matrix
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
+
+# Find index of feature columns with correlation greater than 0.95
+to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
+for i in to_drop:
+  if i in predictores_numericos:
+    predictores_numericos.remove(i)
+  elif i in predictores_categoricos:
+    predictores_categoricos.remove(i)
+# df.drop(df[to_drop], axis=1,inplace=True)
+
+DataFrame_filtrado["Predicciones_XGB"] =  predictions_to_NN_1
+DataFrame_filtrado["Predicciones_RF"] =  predictions_to_NN_2
+DataFrame_filtrado["Predicciones_CB"] =  predictions_to_NN_3
+DataFrame_filtrado["Predicciones_LGM"] =  predictions_to_NN_4
+
 
 from sklearn.model_selection import train_test_split
-list_predictors = list_predictors + ["predictions_RF"]
+list_predictors = list_predictors + ["Predicciones_XGB"] + ["Predicciones_CB"] + ["Predicciones_RF"]
 X=DataFrame_filtrado[list_predictors]
 y=df[list_targets[0]]
 X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
@@ -425,7 +871,7 @@ X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, rand
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-predictores_numericos = predictores_numericos + ["predictions_RF"]
+predictores_numericos = predictores_numericos +  ["Predicciones_XGB"] + ["Predicciones_CB"] + ["Predicciones_RF"]
 # Aplicamos hot enconder en los datos categoricos
 OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
 OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(X_train[predictores_categoricos].astype(str)))
@@ -457,9 +903,6 @@ lista_nombres_categoricos = OH_encoder.get_feature_names(predictores_categoricos
 lista_nombres = list(lista_nombres_numericos) + list(lista_nombres_categoricos)
 OH_X_train.columns = lista_nombres
 OH_X_test.columns = lista_nombres
-
-#Imprimimos
-print(OH_X_train)
 
 #PCA
 from sklearn.decomposition import PCA
@@ -551,16 +994,6 @@ from sklearn.metrics import r2_score
 Resultado=r2_score(y_test,model.predict(X_red_test,batch_size=100))
 print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado*100))
 
-test_resultados = model.predict(X_red_test).flatten()
-plt.figure(figsize= (20,20))
-fig, ax = plt.subplots()
-ax.scatter(y_test, test_resultados)
-plt.style.use('seaborn')
-ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
-ax.set_xlabel('Real')
-ax.set_ylabel('Predictor')
-plt.show()
-
 #Se genera un histograma con los errores de las predicciones
 Error_histograma = y_test - test_resultados 
 plt.figure(figsize = (15 , 5))
@@ -578,369 +1011,6 @@ Performance['MAE'].append(str(historial.loc[ historial.shape[0] -1 ,'MAE' ])[0:5
 Performance['MAPE'].append(str((NN_CASCADA_MAPE))[0:5])
 Performance['R2'].append(str((Resultado*100))[0:5])
 
-"""###Resultados"""
+Performance
 
-pd.DataFrame.from_dict(Performance)
 
-"""---
-
-#Buscamos Nuevos modelos
-
-##Random forest
-"""
-list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
-                   'MEZCLA_U','MEZCLA_T1','HILATURA_U','HILATURA_T1',
-                   'ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
-                   'DIENTES/CM_PEINE','HILOS/DIENTE_FONDO','HILOS/DIENTE_ORILLO','ANCHO_PEINE','ANCHO_CRUDO',
-                   '%E_URDIMBRE','CUADROS_FONDO',
-                   'PORC_HILOS_FONDO',
-                   'TOTAL_HILOS/ANCHO_CRUDO','PASADAS/CM_T1','PORC_PASADAS/CM_T1' ,'RATIO_CONS1_CONS2',
-                   'GR/MTL_U','GR/MTL_T1','TOTAL_PASADAS',
-                   'PORC_GR/MTL_U','PORC_GR/MTL_T1','TOTAL_GR/MTL','FACTOR_NORMA', 'MAQUINA_PINZAS',
-                   'NUM_COLORES_U',
-                   'NUM_COLORES_T','AGUA    ',
-                   'LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
-                   'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5',
-                   'LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
-                   'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U',
-                   'FACT_COB_TOTAL_REAL', 'TUPIDEZ',
-                   'Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom','E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom',
-                   'PD(-50%)_prom','PG(+35%)_prom','PG(+50%)_prom','NEPS(+140%)_prom','NEPS(+200%)_prom','H_prom','Sh_prom',
-                   'var_Ne_prom','var_cN/tex_prom','var_TPI_prom','var_E%_prom',
-                   '%falla_E_prom','Ne_std','CV% Ne_std','cN/tex_std','TPI_std','FT_std','CV% TPI_std','E%_std','CV% E_std','CV%R_std','CVm%_std','I_std','PD(-40%)_std',
-                   'PD(-50%)_std','PG(+35%)_std','PG(+50%)_std','NEPS(+140%)_std','NEPS(+200%)_std','H_std','Sh_std',
-                   'var_Ne_std','var_cN/tex_std','var_TPI_std','var_E%_std',
-                   '%falla_E_std','%falla_E_075','%falla_R_075','CV% E_075','CV% Ne_075','CV% TPI_075',
-                   'CV%R_075','CVm%_075','E%_075','FT_075','H_075','I_075','NEPS(+140%)_075','NEPS(+200%)_075','Ne_075','PD(-40%)_075','PD(-50%)_075','PG(+35%)_075',
-                   'PG(+50%)_075','Sh_075','TPI_075','cN/tex_075',
-                   'var_E%_075','var_Ne_075','var_TPI_075','var_cN/tex_075',
-                   '%falla_E_025','%falla_R_025','CV% E_025','CV% Ne_025','CV% TPI_025','CV%R_025','CVm%_025','E%_025','FT_025','H_025','I_025','NEPS(+140%)_025',
-                   'NEPS(+200%)_025','Ne_025','PD(-40%)_025','PD(-50%)_025','PG(+35%)_025','PG(+50%)_025','Sh_025','TPI_025','cN/tex_025',
-                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' 
-                  ]
-
-list_targets = ['CMPX DE PARO POR URDIMBRE']
-
-predictores_numericos = [i for i in list_predictors if  'float' in str(DataFrame_filtrado[i].dtype) or 'int' in str(DataFrame_filtrado[i].dtype)]
-predictores_categoricos = [i for i in list_predictors if i not in predictores_numericos]
-
-#quitar variables correlacionadas
-df=DataFrame_filtrado.copy()
-# Create correlation matrix
-corr_matrix = df[predictores_categoricos+predictores_numericos].corr().abs()
-
-# Select upper triangle of correlation matrix
-upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
-
-# Find index of feature columns with correlation greater than 0.95
-to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
-for i in to_drop:
-  if i in predictores_numericos:
-    predictores_numericos.remove(i)
-  elif i in predictores_categoricos:
-    predictores_categoricos.remove(i)
-# df.drop(df[to_drop], axis=1,inplace=True)
-
-import pandas as pd
-Performance = {'Estructura':['Random Forest' , 'CatBoostRegressor' , 'LGBMRegressor']}
-
-from sklearn.model_selection import train_test_split
-X=df[list_predictors]
-y=df[list_targets[0]]
-X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-
-# Aplicamos hot enconder en los datos categoricos
-OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
-OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(X_train[predictores_categoricos].astype(str)))
-OH_cols_test = pd.DataFrame(OH_encoder.transform(X_test[predictores_categoricos].astype(str)))
-
-# One-hot encoding elimina los indices asi que los volvemos a poner
-OH_cols_train.index = X_train.index
-OH_cols_test.index = X_test.index
-
-# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
-num_X_train = X_train[predictores_numericos]
-num_X_test = X_test[predictores_numericos]
-
-# Add one-hot encoded columns to numerical features
-OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
-OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
-
-#Renombramos a las columnas
-lista_nombres_numericos = num_X_train[predictores_numericos].columns 
-lista_nombres_categoricos = OH_encoder.get_feature_names(predictores_categoricos)
-lista_nombres = list(lista_nombres_numericos) + list(lista_nombres_categoricos)
-OH_X_train.columns = lista_nombres
-OH_X_test.columns = lista_nombres
-
-# Importamos el random forest
-from sklearn.ensemble import RandomForestRegressor
-
-rf = RandomForestRegressor(n_estimators = 500 , criterion = 'mse', random_state = 42)# Entrenamos el modelo con 1000 arboles
-
-rf.fit(OH_X_train, y_train)
-
-# Predecimos
-predictions = rf.predict(OH_X_test)
-
-errors_rf = abs(predictions - y_test)
-
-mape_rf = mean_absolute_percentage_error(y_test, predictions)
-
-Resultado_rf=r2_score(y_test,rf.predict(OH_X_test))
-print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado_rf*100))
-
-Performance['MAE'] = [(str(round(np.mean(errors_rf))))]
-Performance['MAPE'] = [(str((mape_rf))[0:5])]
-Performance['R2']= [(str((Resultado_rf*100))[0:5])]
-
-test_resultados = rf.predict(OH_X_test).flatten()
-plt.figure(figsize= (20,20))
-fig, ax = plt.subplots()
-ax.scatter(y_test, test_resultados)
-plt.style.use('seaborn')
-ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
-ax.set_xlabel('Real')
-ax.set_ylabel('Predictor')
-plt.show()
-
-#Se genera un histograma con los errores de las predicciones
-Error_histograma = y_test - test_resultados 
-plt.figure(figsize = (15 , 5))
-sns.distplot(Error_histograma , kde= False)
-
-"""##CatBoostRegressor
-
-Para evitar el aumento sustancial de columnas por el uso de one hot encoder en las varibales categoricas se usaran 2 diferentes modelos que no requieren este tratamiento
-"""
-
-
-
-# Revisamos la version
-import catboost
-from sklearn.model_selection import GridSearchCV
-print(catboost.__version__)
-
-
-predictores_numericos = [i for i in list_predictors if  'float' in str(DataFrame_filtrado[i].dtype) or 'int' in str(DataFrame_filtrado[i].dtype)]
-predictores_categoricos = [i for i in list_predictors if i not in predictores_numericos]
-
-#quitar variables correlacionadas
-df=DataFrame_filtrado.copy()
-# Create correlation matrix
-corr_matrix = df[predictores_categoricos+predictores_numericos].corr().abs()
-
-# Select upper triangle of correlation matrix
-upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
-
-# Find index of feature columns with correlation greater than 0.95
-to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
-for i in to_drop:
-  if i in predictores_numericos:
-    predictores_numericos.remove(i)
-  elif i in predictores_categoricos:
-    predictores_categoricos.remove(i)
-# df.drop(df[to_drop], axis=1,inplace=True)
-
-len(predictores_numericos + predictores_categoricos)
-
-print(predictores_categoricos)
-
-"""Separamos las variables para entrenamiento y validacion"""
-
-from sklearn.model_selection import train_test_split
-X=df[list_predictors]
-y=df[list_targets[0]]
-X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
-
-"""Tratamiento de variables"""
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-
-# Aplicamos hot enconder en los datos categoricos
-
-OH_cols_train = pd.DataFrame(X_train[predictores_categoricos].astype(str))
-OH_cols_test = pd.DataFrame(X_test[predictores_categoricos].astype(str))
-
-# One-hot encoding elimina los indices asi que los volvemos a poner
-OH_cols_train.index = X_train.index
-OH_cols_test.index = X_test.index
-
-# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
-num_X_train = X_train[predictores_numericos]
-num_X_test = X_test[predictores_numericos]
-
-# Add one-hot encoded columns to numerical features
-OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
-OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
-
-#Borrar
-OH_X_train[predictores_categoricos]
-
-parameters = {'depth'         : [6,8,10],
-              'learning_rate' : [0.01, 0.05, 0.1],
-              'l2_leaf_reg': [1,4,9],
-              'iterations'    : [30, 50, 100]
-              }
-
-#Creamos el modelo
-#model_CBR = catboost.CatBoostRegressor(cat_features= OH_X_train[predictores_categoricos] ,eval_metric= 'MAPE')
-#Busqueda en grilla
-#grid = GridSearchCV(estimator=model_CBR, param_grid = parameters, cv = 2, verbose= 1)
-#grid.fit(OH_X_train, y_train)
-#Mostrar los resultados
-#print(" Results from Grid Search " )
-#print("\n The best estimator across ALL searched params:\n", grid.best_estimator_)
-#print("\n The best score across ALL searched params:\n", grid.best_score_)
-#print("\n The best parameters across ALL searched params:\n", grid.best_params_)
-
-"""The best parameters across ALL searched params:
- {'depth': 10, 'iterations': 100, 'l2_leaf_reg': 1, 'learning_rate': 0.05}
-"""
-
-CBR = catboost.CatBoostRegressor(cat_features= OH_X_train[predictores_categoricos] ,
-                                 learning_rate= 0.05 , depth= 10 , iterations= 100 ,eval_metric= 'MAPE' 
-                                 ,l2_leaf_reg = 1)
-
-CBR.fit(OH_X_train, y_train)
-
-predictions = CBR.predict(OH_X_test)
-errors = abs(predictions - y_test)
-Resultado=r2_score(y_test,CBR.predict(OH_X_test))
-
-print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado*100))
-
-print("El MAPE de esta solucion fue de: {:6.2f} %".format(mean_absolute_percentage_error(y_test,predictions)))
-
-test_resultados = CBR.predict(OH_X_test).flatten()
-
-fig, ax = plt.subplots()
-ax.scatter(y_test, test_resultados)
-plt.style.use('seaborn')
-ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
-ax.set_xlabel('Real')
-ax.set_ylabel('Predictor')
-plt.figure(figsize= (20,20))
-plt.show()
-
-#Se genera un histograma con los errores de las predicciones
-Error_histograma = y_test - test_resultados 
-plt.figure(figsize = (15 , 5))
-sns.distplot(Error_histograma , kde= False)
-plt.xlabel('Error CMPX_U')
-
-Performance['MAE'].append(str(round(np.mean(errors))))
-Performance['MAPE'].append(str((mean_absolute_percentage_error(y_test,predictions)))[0:5])
-Performance['R2'].append(str((Resultado*100))[0:5])
-
-"""##LGBMRegressor"""
-
-# check lightgbm version
-import lightgbm
-print(lightgbm.__version__)
-
-P_total= predictores_numericos + predictores_categoricos
-
-"""Separamos las variables para entrenamiento y validacion"""
-
-from sklearn.model_selection import train_test_split
-X=df[list_predictors]
-y=df[list_targets[0]]
-X_train, X_test, y_train, y_test = train_test_split(X , y , test_size=0.33, random_state=0)
-
-"""Tratamiento de variables"""
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-
-# Aplicamos hot enconder en los datos categoricos
-
-OH_cols_train = pd.DataFrame(X_train[predictores_categoricos].astype(str))
-OH_cols_test = pd.DataFrame(X_test[predictores_categoricos].astype(str))
-
-# One-hot encoding elimina los indices asi que los volvemos a poner
-OH_cols_train.index = X_train.index
-OH_cols_test.index = X_test.index
-
-# Eliminamos las columnas categoricas de nuestra data para luego remplazarlas con las resultantes del HOE
-num_X_train = X_train[predictores_numericos]
-num_X_test = X_test[predictores_numericos]
-
-# Add one-hot encoded columns to numerical features
-OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
-OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
-
-params = {
-    'num_leaves': [7, 14, 21, 28],
-    'learning_rate': [0.1, 0.03, 0.003],
-    'max_depth': [-1, 3, 5],
-    'n_estimators': [50, 100, 200],
-    'colsample_bytree': [0.7, 0.8],
-    'reg_alpha': [1.1, 1.2, 1.3],
-    'reg_lambda': [1.1, 1.2, 1.3],
-    'min_split_gain': [0.3, 0.4],
-    'subsample': [0.7, 0.8, 0.9],
-    'subsample_freq': [20]
-}
-
-#Creamos el modelo
-#model_LGB = lightgbm.LGBMRegressor(eval_metric= 'MAPE'  )
-#Busqueda en grilla
-#grid = GridSearchCV(estimator=model_LGB, param_grid = params, cv = 2, verbose= 1 , n_jobs= -1)
-#grid.fit(num_X_train, y_train)
-#Mostrar los resultados
-#print(" Results from Grid Search " )
-#print("\n The best estimator across ALL searched params:\n", grid.best_estimator_)
-#print("\n The best score across ALL searched params:\n", grid.best_score_)
-#print("\n The best parameters across ALL searched params:\n", grid.best_params_)
-
-"""The best parameters across ALL searched params:
- {'colsample_bytree': 0.7, 'learning_rate': 0.03, 'max_depth': -1, 'min_split_gain': 0.3, 'n_estimators': 200, 'num_leaves': 21, 'reg_alpha': 1.3, 'reg_lambda': 1.1, 'subsample': 0.9, 'subsample_freq': 20}
-"""
-
-LGB = lightgbm.LGBMRegressor(colsample_bytree= 0.7 , num_leaves= 21 , reg_alpha= 1.3 , n_estimators=200 
-                             ,learning_rate = 0.03 , max_depth = -1 ,min_split_gain =0.3 ,reg_lambda = 1.1
-                              ,subsample = 0.9, subsample_freq = 20 )
-
-for feature in predictores_categoricos:
-    OH_X_train[feature] = pd.Series(OH_X_train[feature], dtype="category")
-    OH_X_test[feature] = pd.Series(OH_X_train[feature], dtype="category")
-
-LGB.fit(OH_X_train, y_train  )
-
-predictions = LGB.predict(OH_X_test)
-errors = abs(predictions - y_test)
-Resultado=r2_score(y_test,LGB.predict(OH_X_test))
-
-print("El R2 de esta solucion fue de: {:6.2f} %".format(Resultado*100))
-
-print("El MAPE de esta solucion fue de: {:6.2f} %".format(mean_absolute_percentage_error(y_test,predictions)))
-
-test_resultados = LGB.predict(OH_X_test).flatten()
-
-fig, ax = plt.subplots()
-ax.scatter(y_test, test_resultados)
-plt.style.use('seaborn')
-ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'go--', lw=4)
-ax.set_xlabel('Real')
-ax.set_ylabel('Predictor')
-plt.figure(figsize= (20,20))
-plt.show()
-
-#Se genera un histograma con los errores de las predicciones
-Error_histograma = y_test - test_resultados 
-plt.figure(figsize = (15 , 5))
-sns.distplot(Error_histograma , kde= False)
-plt.xlabel('Error CMPX_U')
-
-Performance['MAE'].append(str(round(np.mean(errors))))
-Performance['MAPE'].append(str((mean_absolute_percentage_error(y_test,predictions)))[0:5])
-Performance['R2'].append(str((Resultado*100))[0:5])
-
-"""###Resultados"""
-
-pd.DataFrame.from_dict(Performance)
