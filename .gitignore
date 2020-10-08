@@ -6,3 +6,5 @@ catboost_info/learn/events.out.tfevents
 catboost_info/learn_error.tsv
 
 catboost_info/time_left.tsv
+
+catboost_info/tmp/cat_feature_index.6b6224a2-872b19c6-444359a9-1591e80a.tmp
