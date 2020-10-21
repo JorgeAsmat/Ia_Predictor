@@ -12,11 +12,11 @@ import warnings
 #Fe
 DataFrame_filtrado = pd.read_csv("Data_Base\Alpha 1.csv")
 DataFrame_filtrado_CMPX2 = DataFrame_filtrado.copy()
+#Se filtra la columna de salida pues buscamos solo atender a los datos no anomalos de CMPX
 DataFrame_filtrado_CMPX2 = DataFrame_filtrado_CMPX2.loc[ (0 < DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE'])
                                                          & (DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE']<7.5)
                                                         ]
-DataFrame_filtrado_CMPX2.shape
-DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE'] = DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE']
+#Guarda para el uso en el archivo
 DataFrame_filtrado = DataFrame_filtrado_CMPX2.copy()
 
 list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',

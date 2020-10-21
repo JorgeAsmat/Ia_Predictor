@@ -18,8 +18,6 @@ DataFrame_filtrado_CMPX2 = DataFrame_filtrado.copy()
 DataFrame_filtrado_CMPX2 = DataFrame_filtrado_CMPX2.loc[ (0 < DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE'])
                                                          & (DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE']<7.5)
                                                         ]
-#Se reasigna despues de la modificacion
-DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE'] = DataFrame_filtrado_CMPX2['CMPX DE PARO POR URDIMBRE']
 #Guarda para el uso en el archivo
 DataFrame_filtrado = DataFrame_filtrado_CMPX2.copy()
 #########################################
