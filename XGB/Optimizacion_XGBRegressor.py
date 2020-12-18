@@ -1,6 +1,5 @@
 # Librerías
 import numpy as np # algebra lineal
-
 import pandas as pd # manipulacion de datos
 import matplotlib.pyplot as plt # graficas flexibles
 import seaborn as sns # graficas comunes
@@ -118,6 +117,7 @@ OH_X_test.columns = lista_nombres
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.metrics import r2_score
 import xgboost as xgb
+from sklearn.model_selection import cross_validate
 
 SEED = 314159265
 
@@ -143,16 +143,42 @@ def score(params):
     print("Entrenamiento con parametros: ")
     print(params)
     num_round = int(params['n_estimators'])
-    del params['n_estimators']
-    dtrain = xgb.DMatrix(OH_X_train, label=y_train)
-    dvalid = xgb.DMatrix(OH_X_test, label=y_test)
-    watchlist = [(dvalid, 'eval'), (dtrain, 'train')]
-    gbm_model = xgb.train(params, dtrain, num_round,
-                          evals=watchlist,
-                          verbose_eval=False, early_stopping_rounds = 10) #Paro si no mejora a con 10 iteraciones
-    predictions = gbm_model.predict(dvalid,
-                                    ntree_limit=gbm_model.best_iteration + 1)
-    score = mean_absolute_percentage_error(y_test, predictions)
+#    del params['n_estimators']
+#    dtrain = xgb.DMatrix(OH_X_train, label=y_train)
+#    dvalid = xgb.DMatrix(OH_X_test, label=y_test)
+#    watchlist = [(dvalid, 'eval'), (dtrain, 'train')]
+#    watchlist = [(dtrain, 'train')]
+#    gbm_model = xgb.train(params, dtrain, num_round,
+#                          evals=watchlist, verbose_eval= False,
+#                          early_stopping_rounds = 10) #Paro si no mejora a con 10 iteraciones
+#    predictions = gbm_model.predict(dvalid,
+#                                    ntree_limit=gbm_model.best_iteration + 1)
+    warnings.filterwarnings(action='ignore', category=DeprecationWarning)
+    gbm_model = xgb.XGBRegressor(
+        max_depth= params['max_depth'],
+        learning_rate  = params['eta'] ,
+        n_estimators= int(params['n_estimators']) , 
+        silent= params['silent'], 
+        objective= params['objective'], 
+        booster= params['booster'], 
+        n_jobs=params['n_jobs'], 
+        gamma=params['gamma'],
+        min_child_weight=params['min_child_weight'], 
+        subsample=params['subsample'], 
+        colsample_bytree=params['colsample_bytree'], 
+        reg_alpha=params['alpha'], 
+        reg_lambda=params['lambda'], 
+        seed= params['seed'],
+        tree_method= params['tree_method'],
+    )
+
+#    gbm_model.fit(OH_X_train,y_train)
+    CrossValMean = 0
+    score_rmse = {}
+    score_rmse = cross_validate(estimator = gbm_model, X = OH_X_train, y = y_train, cv = 3 
+                                , scoring= 'neg_root_mean_squared_error' , n_jobs= -1)
+    CrossValMean = -1 * score_rmse['test_score'].mean()
+    score = CrossValMean
 
     print("\tScore {0}\n\n".format(score))
 

@@ -120,6 +120,7 @@ SEED = 314159265
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.metrics import r2_score
 import lightgbm
+from sklearn.model_selection import cross_validate
 print(lightgbm.__version__)
 
 def percentage_error(actual, predicted):
@@ -163,10 +164,16 @@ def score(params):
                                         reg_lambda=params['reg_lambda'],
                                         colsample_bytree=params['colsample_bytree']
                                         ,n_jobs= -1 )
-    lgbm_model.fit(OH_X_train,y_train)
-    predictions = lgbm_model.predict(OH_X_test)
+#    lgbm_model.fit(OH_X_train,y_train)
+#    predictions = lgbm_model.predict(OH_X_test)
+#    score = mean_absolute_percentage_error(y_test, predictions)
 
-    score = mean_absolute_percentage_error(y_test, predictions)
+    CrossValMean = 0
+    score_rmse = {}
+    score_rmse = cross_validate(estimator = lgbm_model, X = OH_X_train, y = y_train, cv = 3 
+                                , scoring= 'neg_root_mean_squared_error' , n_jobs= -1)
+    CrossValMean = -1 * score_rmse['test_score'].mean()
+    score = CrossValMean
 
     print("\tScore {0}\n\n".format(score))
 
@@ -199,7 +206,7 @@ def optimize(
     #Uso de fmin para encontrar los mejores hyperparametros
     best = fmin(score, space, algo=tpe.suggest, 
                 # trials=trials, 
-                max_evals=250)
+                max_evals=80)
     return best
 
 best_hyperparams = optimize(

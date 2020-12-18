@@ -1,6 +1,5 @@
 # Librerías
 import numpy as np # algebra lineal
-
 import pandas as pd # manipulacion de datos
 import matplotlib.pyplot as plt # graficas flexibles
 import seaborn as sns # graficas comunes
@@ -88,9 +87,9 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
 # Aplicamos hot enconder en los datos categoricos
-
-OH_cols_train = pd.DataFrame(X_train[predictores_categoricos].astype(str))
-OH_cols_test = pd.DataFrame(X_test[predictores_categoricos].astype(str))
+OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(X_train[predictores_categoricos].astype(str)))
+OH_cols_test = pd.DataFrame(OH_encoder.transform(X_test[predictores_categoricos].astype(str)))
 
 # One-hot encoding elimina los indices asi que los volvemos a poner
 OH_cols_train.index = X_train.index
@@ -104,99 +103,26 @@ num_X_test = X_test[predictores_numericos]
 OH_X_train = pd.concat([num_X_train, OH_cols_train], axis=1)
 OH_X_test = pd.concat([num_X_test, OH_cols_test], axis=1)
 
-#####################################
-#Se comienza la optimizacion del CatBoost
-#####################################
-
-SEED = 314159265
+#Renombramos a las columnas
+lista_nombres_numericos = num_X_train[predictores_numericos].columns 
+lista_nombres_categoricos = OH_encoder.get_feature_names(predictores_categoricos)
+lista_nombres = list(lista_nombres_numericos) + list(lista_nombres_categoricos)
+OH_X_train.columns = lista_nombres
+OH_X_test.columns = lista_nombres
 
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.metrics import r2_score
-import catboost
+import xgboost as xgb
 from sklearn.model_selection import cross_validate
 
-def percentage_error(actual, predicted):
-    res = np.empty(actual.shape)
-    for j in range(actual.shape[0]):
-        if actual[j] != 0:
-            res[j] = (actual[j] - predicted[j]) / actual[j]
-        else:
-            res[j] = predicted[j] / np.mean(actual)
-    return res
 
-def mean_absolute_percentage_error(y_true, y_pred): 
-    return np.mean(np.abs(percentage_error(np.asarray(y_true), np.asarray(y_pred)))) * 100
-
-def mape_objective_function(dtrain ,preds):
-    labels = dtrain.get_label()
-    grad = (preds - labels) / (0.2 + labels * np.abs(preds - labels))
-    hess = 0.1 + np.zeros(len(preds))
-    return grad, hess
-
-def score(params):
-    print("Entrenamiento con parametros: ")
-    print(params)
-    CatBoost_model = catboost.CatBoostRegressor(
-        cat_features= OH_X_train[predictores_categoricos],
-        learning_rate=params['learning_rate'],
-        max_depth=params['max_depth'],
-        colsample_bylevel=params['colsample_bylevel'],
-        bagging_temperature=params['bagging_temperature'],
-        random_strength=params['random_strength'],
-        eval_metric= 'MAPE',
-        l2_leaf_reg= params['l2_leaf_reg'],
-    )
-#    CatBoost_model.fit(OH_X_train,y_train)
-#    predictions = CatBoost_model.predict(OH_X_test)
-#    score = mean_absolute_percentage_error(y_test, predictions)
-
-    CrossValMean = 0
+rango = range(3,6,1)
+for i in rango:
+    gbm_model =  xgb.XGBRegressor(max_depth= i, seed= 12)
     score_rmse = {}
-    score_rmse = cross_validate(estimator = CatBoost_model, X = OH_X_train, y = y_train, cv = 3 
-                                , scoring= 'neg_root_mean_squared_error' , n_jobs= -1)
+    score_rmse = cross_validate(estimator = gbm_model, X = OH_X_train, y = y_train, cv = 3 
+                            , scoring= 'neg_root_mean_squared_error' , n_jobs= -1)
     CrossValMean = -1 * score_rmse['test_score'].mean()
     score = CrossValMean
 
-    print("\tScore {0}\n\n".format(score))
-
-    loss = score
-    return {'loss': loss, 'status': STATUS_OK}
-
-def optimize(
-             #trials, 
-             random_state=SEED):
-    """
-    Esta es  una funcion de optimizacion dado un espacio de busqueda 
-    para encontrar los mejores hyperparametros de un lightgbm con un 
-    evaluacion de mape
-    """
-    # Para evuluar los parametros de CatBoost
-    # https://catboost.ai/docs/concepts/python-reference_parameters-list.html
-    space = {
-        'learning_rate': hp.uniform('learning_rate', 0.01, 0.8),
-        'max_depth': hp.quniform('max_depth', 2, 10, 1),
-        'colsample_bylevel': hp.uniform('colsample_bylevel', 0.5, 1.0),
-        'bagging_temperature': hp.uniform('bagging_temperature', 0.0, 100),
-        'random_strength': hp.uniform('random_strength', 0.0, 100),
-        'l2_leaf_reg': hp.uniform('l2_leaf_reg', 1, 10),
-    }
-    #Uso de fmin para encontrar los mejores hyperparametros
-    best = fmin(score, space, algo=tpe.suggest, 
-                # trials=trials, 
-                max_evals=250)
-    return best
-
-best_hyperparams = optimize(
-                            #trials
-                            )
-print("Los mejores hiperparametros son: ", "\n")
-print(best_hyperparams) 
-
-
-##################################
-#Escribimos los mejores resultados
-##################################
-dict = best_hyperparams
-f = open("Mejores_resultados_CatBoost.txt","w")
-f.write( str(dict) )
-f.close()    
+    print(score)

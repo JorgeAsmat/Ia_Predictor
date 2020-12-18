@@ -122,7 +122,7 @@ OH_X_test.columns = lista_nombres
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.metrics import r2_score
 from sklearn.ensemble import RandomForestRegressor
-
+from sklearn.model_selection import cross_validate
 
 def percentage_error(actual, predicted):
     res = np.empty(actual.shape)
@@ -145,9 +145,17 @@ def score(params):
                                                 min_samples_leaf = params['min_samples_leaf'],
                                                 min_samples_split = params['min_samples_split'],
                                                 n_estimators = params['n_estimators'], n_jobs= -1) 
-    Random_forest_model.fit(OH_X_train,y_train)
-    predictions = Random_forest_model.predict(OH_X_test)
-    score = mean_absolute_percentage_error(y_test, predictions)
+#    Random_forest_model.fit(OH_X_train,y_train)
+#    predictions = Random_forest_model.predict(OH_X_test)
+#    score = mean_absolute_percentage_error(y_test, predictions)
+
+    CrossValMean = 0
+    score_rmse = {}
+    score_rmse = cross_validate(estimator = Random_forest_model, X = OH_X_train, y = y_train, cv = 3 
+                                , scoring= 'neg_root_mean_squared_error' , n_jobs= -1)
+    CrossValMean = -1 * score_rmse['test_score'].mean()
+    score = CrossValMean
+
     print("\tScore {0}\n\n".format(score))
 
     loss = score
