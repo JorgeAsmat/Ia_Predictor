@@ -14,3 +14,7 @@ catboost_info/tmp/cat_feature_index.6b6224a2-872b19c6-444359a9-1591e80a.tmp
 Mejores_resultados_LGBM.txt
 
 *.txt
+
+catboost_info/tmp/cat_feature_index.f8c32330-4737a75e-2d9c9afc-89f08bec.tmp
+
+*.tmp

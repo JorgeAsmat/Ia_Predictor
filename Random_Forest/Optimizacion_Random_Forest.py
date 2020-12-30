@@ -23,35 +23,16 @@ DataFrame_filtrado = DataFrame_filtrado_CMPX2.copy()
 #########################################
 #Comenzamos con la implementacion del modelo
 #########################################
-list_predictors = ['RPM','MAT_U','MAT_T','TITULO_U','NUM_CABOS_U',
-                   'MEZCLA_U','MEZCLA_T1','HILATURA_U','HILATURA_T1',
-                   'ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
-                   'DIENTES/CM_PEINE','HILOS/DIENTE_FONDO','HILOS/DIENTE_ORILLO','ANCHO_PEINE','ANCHO_CRUDO',
-                   '%E_URDIMBRE','CUADROS_FONDO',
-                   'PORC_HILOS_FONDO',
-                   'TOTAL_HILOS/ANCHO_CRUDO','PASADAS/CM_T1','PORC_PASADAS/CM_T1' ,'RATIO_CONS1_CONS2',
-                   'GR/MTL_U','GR/MTL_T1','TOTAL_PASADAS',
-                   'PORC_GR/MTL_U','PORC_GR/MTL_T1','TOTAL_GR/MTL','FACTOR_NORMA', 'MAQUINA_PINZAS',
-                   'NUM_COLORES_U',
-                   'NUM_COLORES_T','AGUA    ',
-                   'LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
-                   'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5',
-                   'LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
-                   'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U',
-                   'FACT_COB_TOTAL_REAL', 'TUPIDEZ',
-                   'Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom','E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom',
-                   'PD(-50%)_prom','PG(+35%)_prom','PG(+50%)_prom','NEPS(+140%)_prom','NEPS(+200%)_prom','H_prom','Sh_prom',
-                   'var_Ne_prom','var_cN/tex_prom','var_TPI_prom','var_E%_prom',
-                   '%falla_E_prom','Ne_std','CV% Ne_std','cN/tex_std','TPI_std','FT_std','CV% TPI_std','E%_std','CV% E_std','CV%R_std','CVm%_std','I_std','PD(-40%)_std',
-                   'PD(-50%)_std','PG(+35%)_std','PG(+50%)_std','NEPS(+140%)_std','NEPS(+200%)_std','H_std','Sh_std',
-                   'var_Ne_std','var_cN/tex_std','var_TPI_std','var_E%_std',
-                   '%falla_E_std','%falla_E_075','%falla_R_075','CV% E_075','CV% Ne_075','CV% TPI_075',
-                   'CV%R_075','CVm%_075','E%_075','FT_075','H_075','I_075','NEPS(+140%)_075','NEPS(+200%)_075','Ne_075','PD(-40%)_075','PD(-50%)_075','PG(+35%)_075',
-                   'PG(+50%)_075','Sh_075','TPI_075','cN/tex_075',
-                   'var_E%_075','var_Ne_075','var_TPI_075','var_cN/tex_075',
-                   '%falla_E_025','%falla_R_025','CV% E_025','CV% Ne_025','CV% TPI_025','CV%R_025','CVm%_025','E%_025','FT_025','H_025','I_025','NEPS(+140%)_025',
-                   'NEPS(+200%)_025','Ne_025','PD(-40%)_025','PD(-50%)_025','PG(+35%)_025','PG(+50%)_025','Sh_025','TPI_025','cN/tex_025',
-                   'var_E%_025','var_Ne_025','var_TPI_025','var_cN/tex_025' 
+list_predictors = [
+                   'TITULO_U','NUM_CABOS_U','Telar','ES_PEINADO_NO_CARDADO_U','ES_PEINADO_NO_CARDADO_T1','LIGAMENTO_FONDO','LIGAMENTO_ORILLO',
+                   'DIENTES/CM_PEINE','HILOS/DIENTE_FONDO','HILOS/DIENTE_ORILLO','ANCHO_PEINE','ANCHO_CRUDO','%E_URDIMBRE','CUADROS_FONDO',
+                   'PORC_HILOS_FONDO','TOTAL_HILOS/ANCHO_CRUDO','PASADAS/CM_T1','PORC_PASADAS/CM_T1' ,'RATIO_CONS1_CONS2',
+                   'GR/MTL_U','GR/MTL_T1','TOTAL_PASADAS','PORC_GR/MTL_U','PORC_GR/MTL_T1','TOTAL_GR/MTL', 'MAQUINA_PINZAS',
+                   'NUM_COLORES_U','NUM_COLORES_T','AGUA    ','LUMINOSIDAD_T_1', 'LUMINOSIDAD_U_1', 'LUMINOSIDAD_T_2', 'LUMINOSIDAD_U_2', 'LUMINOSIDAD_T_3',
+                   'LUMINOSIDAD_U_3', 'LUMINOSIDAD_T_4', 'LUMINOSIDAD_U_4', 'LUMINOSIDAD_T_5', 'LUMINOSIDAD_U_5','LUMINOSIDAD_T_6', 'LUMINOSIDAD_U_6', 
+                   'FACT_COB_U', 'FACT_COB_T', 'PORC_FACT_COB_U','FACT_COB_TOTAL_REAL', 'TUPIDEZ','Ne_prom','CV% Ne_prom','cN/tex_prom','TPI_prom','FT_prom','CV% TPI_prom',
+                   'E%_prom','CV% E_prom','CV%R_prom','CVm%_prom','I_prom','PD(-40%)_prom','PD(-50%)_prom','PG(+35%)_prom','PG(+50%)_prom','NEPS(+140%)_prom','NEPS(+200%)_prom',
+                   'H_prom','Sh_prom','var_Ne_prom','var_cN/tex_prom','var_TPI_prom','var_E%_prom','%falla_R_prom','%falla_E_prom'
                   ]
 
 list_targets = ['CMPX DE PARO POR URDIMBRE']
